@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 5
+
+// Structure to store call details
+typedef struct {
+    int callID;
+    char customerName[50];
+} Call;
+
+// Queue structure
+typedef struct {
+    Call queue[MAX];
+    int front, rear;
+} CallQueue;
+
+// Function to initialize the queue
+void initializeQueue(CallQueue *cq) {
+    cq->front = -1;
+    cq->rear = -1;
+}
+
+// Function to check if the queue is full
+int isFull(CallQueue *cq) {
+    return (cq->rear + 1) % MAX == cq->front;
+}
+
+// Function to check if the queue is empty
+int isEmpty(CallQueue *cq) {
+    return cq->front == -1;
+}
+
+// Function to add a call to the queue (enqueue)
+void enqueue(CallQueue *cq, int callID, char *customerName) {
+    if (isFull(cq)) {
+        printf("\nQueue is full! Cannot add more calls.\n");
+        return;
+    }
+    if (isEmpty(cq)) {
+        cq->front = cq->rear = 0;
+    } else {
+        cq->rear = (cq->rear + 1) % MAX;
+    }
+    cq->queue[cq->rear].callID = callID;
+    strcpy(cq->queue[cq->rear].customerName, customerName);
+    printf("\nCall from %s (ID: %d) added to the queue.\n", customerName, callID);
+}
+
+// Function to answer a call (dequeue)
+void dequeue(CallQueue *cq) {
+    if (isEmpty(cq)) {
+        printf("\nNo calls in queue.\n");
+        return;
+    }
+    printf("\nAnswering call from %s (ID: %d).\n", cq->queue[cq->front].customerName, cq->queue[cq->front].callID);
+    if (cq->front == cq->rear) {
+        cq->front = cq->rear = -1; // Reset queue if last element is dequeued
+    } else {
+        cq->front = (cq->front + 1) % MAX;
+    }
+}
+
+// Function to display pending calls
+void displayQueue(CallQueue *cq) {
+    if (isEmpty(cq)) {
+        printf("\nNo pending calls.\n");
+        return;
+    }
+    printf("\nPending Calls:\n");
+    int i = cq->front;
+    while (1) {
+        printf("Call ID: %d | Customer: %s\n", cq->queue[i].callID, cq->queue[i].customerName);
+        if (i == cq->rear) break;
+        i = (i + 1) % MAX;
+    }
+}
+
+// Main function
+int main() {
+    CallQueue cq;
+    initializeQueue(&cq);
+    int choice, callID = 1;
+    char name[50];
+
+    while (1) {
+        printf("\n--- Call Center System ---\n");
+        printf("1. Add Call to Queue\n");
+        printf("2. Answer Call\n");
+        printf("3. View Pending Calls\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); // To clear buffer
+
+        switch (choice) {
+            case 1:
+                printf("Enter Customer Name: ");
+                fgets(name, sizeof(name), stdin);
+                name[strcspn(name, "\n")] = 0; // Remove newline character
+                enqueue(&cq, callID++, name);
+                break;
+            case 2:
+                dequeue(&cq);
+                break;
+            case 3:
+                displayQueue(&cq);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                return 0;
+            default:
+                printf("Invalid choice! Try again.\n");
+        }
+    }
+}
